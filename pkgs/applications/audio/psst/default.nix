@@ -1,4 +1,4 @@
-{ lib, fetchFromGitHub, rustPlatform, alsa-lib, atk, cairo, dbus, gdk-pixbuf, glib, gtk3, pango, pkg-config, makeDesktopItem }:
+{ lib, fetchFromGitHub, rustPlatform, alsa-lib, atk, cairo, dbus, gdk-pixbuf, glib, gtk3, pango, pkg-config, makeDesktopItem, libxkbcommon }:
 
 let
   desktopItem = makeDesktopItem {
@@ -36,7 +36,10 @@ rustPlatform.buildRustPackage rec {
   # specify the subdirectory of the binary crate to build from the workspace
   buildAndTestSubdir = "psst-gui";
 
-  nativeBuildInputs = [ pkg-config ];
+  nativeBuildInputs = [
+    pkg-config
+    rustPlatform.bindgenHook
+  ];
 
   buildInputs = [
     alsa-lib
@@ -47,11 +50,13 @@ rustPlatform.buildRustPackage rec {
     glib
     gtk3
     pango
+    libxkbcommon
   ];
 
   patches = [
     # Use a fixed build time, hard-code upstream URL instead of trying to read `.git`
     ./make-build-reproducible.patch
+    ./force-x11.patch
   ];
 
   postInstall = ''
